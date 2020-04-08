@@ -1,0 +1,6 @@
+# Python
+# Byte-compiled / optimized / DLL files
+__pycache__/
+
+# Ignore IDE related files and folders
+.idea*
