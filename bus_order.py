@@ -87,4 +87,4 @@ def unexpected_text_received():
 
 
 if __name__ == '__main__':
-    bot.polling()
+    bot.polling(timeout=60)
