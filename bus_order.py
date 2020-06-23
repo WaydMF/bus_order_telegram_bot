@@ -16,18 +16,18 @@ keyboard_cities.row("Минск", "Ошмяны")
 order = Order()
 
 
-@bot.message_handler(content_types=["text"])
-def hello_message_handler(message):
-    hello_options = ["прив", "привет", "здравствуй", "здравствуйте", "хей", "ghbdtn", "hi", "hello"]
-    if message.text.strip().lower() in hello_options:
-        first_order_message(message)
-
-
 @bot.message_handler(commands=["start"])
 def first_order_message(message):
     msg = bot.send_message(message.chat.id, "Привет, выберите город отправления, пожалуйста.",
                            reply_markup=keyboard_cities)
     bot.register_next_step_handler(msg, get_city_from)
+
+
+@bot.message_handler(content_types=["text"])
+def hello_message_handler(message):
+    hello_options = ["прив", "привет", "здравствуй", "здравствуйте", "хей", "ghbdtn", "hi", "hello"]
+    if message.text.strip().lower() in hello_options:
+        first_order_message(message)
 
 
 def get_city_from(message):
