@@ -23,6 +23,10 @@ class Order(object):
                     "пов. на Сморг. погран. группа": 44, "трасса М6 Воложинский пост": 65,
                     "трасса М7 д. Дайнова Большая": 67, "трасса М7 пов. на ст. Воложин": 66}
 
+    month_translator = {"January": "января", "February": "февраля", "March": "марта",
+                        "April": "апреля", "May": "мая", "June": "июня", "July": "июля",
+                        "August": "апреля", "September": "сентября", "October": "октября",
+                        "November": "ноября", "December": "декабря"}
 
     def __init__(self, user_language):
         self.user_language = user_language
@@ -84,6 +88,17 @@ class Order(object):
                           "Цена": tour["price"]})
 
         return tours
+
+    def _transform_date(self, datetime_obj):
+        datetime_str = datetime_obj.strftime("%d %B %H:%M")
+        if self.user_language == "ru":
+            month = datetime_str.split()[1]
+            out_str = datetime_str.replace(month, self.month_translator[month])
+        else:
+            out_str = datetime_str
+        if out_str.startswith('0'):
+            return out_str[1:]
+        return out_str
 
     def get_info(self):
         tours = self._get_info_api()
