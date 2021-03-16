@@ -1,4 +1,5 @@
 from bs4 import BeautifulSoup as bs4
+import datetime
 import json
 import requests
 
@@ -22,7 +23,11 @@ class Order(object):
                     "пов. на Сморг. погран. группа": 44, "трасса М6 Воложинский пост": 65,
                     "трасса М7 д. Дайнова Большая": 67, "трасса М7 пов. на ст. Воложин": 66}
 
-    def _get_info(self):
+
+    def __init__(self, user_language):
+        self.user_language = user_language
+
+    def _get_info_http(self):
 
         city_from = self.city_mapping.get(self.city_from)
         city_to = self.city_mapping.get(self.city_to)
@@ -54,15 +59,41 @@ class Order(object):
         else:
             return response["errors"]
 
+    def _get_info_api(self):
+        city_from = self.city_mapping.get(self.city_from)
+        city_to = self.city_mapping.get(self.city_to)
+        date = self.date
+        request_url = "https://xn--90aiim0b.xn--80aa3agllaqi6bg.xn--90ais/api/v1/client/route/tours"
+        parameters = {"from": city_from,
+                      "to": city_to,
+                      "date": datetime.datetime.strptime(date, "%d.%m.%Y").timestamp(),
+                      "count_places": 1}
+        response = requests.get(request_url, params=parameters)
+        response = json.loads(response.text)
+        tours = []
+
+        for tour in response["tours"]:
+            date_start = self._transform_date(datetime.datetime.fromisoformat(tour["date_start"]))
+            date_finish = self._transform_date(datetime.datetime.fromisoformat(tour["date_finish"]))
+            route_interval = "{}:{}".format(*divmod(tour["route_interval"], 60))
+
+            tours.append({"Маршрут": tour["route_name"],
+                          "Отправление": date_start,
+                          "В пути": route_interval,
+                          "Прибытие": date_finish,
+                          "Цена": tour["price"]})
+
+        return tours
+
     def get_info(self):
-        tours = self._get_info()
+        tours = self._get_info_api()
         response = []
         if isinstance(tours, list):
-            for tour in tours:
-                response.append('')
+            for number, tour in enumerate(tours):
+                response.append(f"\nВариант №{number + 1}:")
                 for k, v in tour.items():
                     response.append(f"{k}: {v}")
-        else:
+        elif isinstance(tours, dict):
             response.append("Ошибка! Надеюсь, это как-нибудь поможет :\\")
             for k, v in tours.items():
                 v = ','.join(v)
